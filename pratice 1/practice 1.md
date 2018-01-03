@@ -5,7 +5,7 @@
 
 
 ### 1
-'''
+```
 
 function sequence(startValue, step) {
   startValue = startValue || 0;
@@ -16,10 +16,10 @@ function sequence(startValue, step) {
   }
 }
 
-'''
+```
 
 ### 2
-'''
+```
 
 var take = function(fn, count){
   var arr = [];
@@ -31,10 +31,10 @@ var take = function(fn, count){
   return arr;
 }
 
-'''
+```
 
 ### 3
-'''
+```
 
 function map(fn, array){
   var resultArray = [];
@@ -47,10 +47,10 @@ function map(fn, array){
 }
 
 
-'''
+```
 
 ### 4
-'''
+```
 
 var fmap = function(fn, gen){
   var resultArguments = 0;
@@ -69,10 +69,10 @@ var fmap = function(fn, gen){
   return generation;
 }
 
-'''
+```
 
 ### 5
-'''
+```
 
 function partial(fn, ...partialArgs) {
   return function(...args) {
@@ -80,11 +80,11 @@ function partial(fn, ...partialArgs) {
   }
 }
 
-'''
+```
 
 ### 6 
 Тут я не уверен, но тесты проходит.
-'''
+```
 
 function partialAny(func) {
   var outerArgs = Array.prototype.slice.call(arguments, 1);  
@@ -114,10 +114,10 @@ function partialAny(func) {
   };
 }
 
-'''
+```
 
 ### 7
-'''
+```
 
 function bind(func, context) {
   var bindArgs = [].slice.call(arguments, 2); 
@@ -129,10 +129,11 @@ function bind(func, context) {
   return wrapper;
 }
 
-'''
+```
 Пример скрысил тут [https://learn.javascript.ru/bind](learn.javascript) в разделе про биндинг 
 Сам бы делал так:
-'''
+
+```
 
 function bind(fn, context) {
   return function() {
@@ -140,10 +141,10 @@ function bind(fn, context) {
   };
 }
 
-'''
+```
 
 ### 8
-'''
+```
 
 function pluck(objects, fieldName) {
   var resultArr = [];
@@ -156,7 +157,7 @@ function pluck(objects, fieldName) {
   return resultArr;
 }
 
-'''
+```
 
 ### 9
 ```
