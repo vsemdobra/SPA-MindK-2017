@@ -43,7 +43,7 @@
 
 <div class="bootstrap-table">
     <div class="fixed-table-container">
-        <div class="loader"><img src="https://i.giphy.com/Mf9o6Z2CNs1eE.gif" height="100"></div>
+        <div class="loader"><img src="https://i.giphy.com/Mf9o6Z2CNs1eE.gif" height="100" hidden></div>
         <table id="example" class="table table-striped table-bordered dataTable" cellspacing="0" width="100%" role="grid" aria-describedby="example_info" style="width: 100%;">
             <thead>
                 <tr class="info">
@@ -70,18 +70,18 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>Renault Sandero</td>
-                    <td>2012</td>
-                    <td>Красный</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>Renault Stepway</td>
-                    <td>2015</td>
-                    <td>Синий</td>
-                </tr>
+               <!--  <tr>
+                   <td>1</td>
+                   <td>Renault Sandero</td>
+                   <td>2012</td>
+                   <td>Красный</td>
+               </tr>
+               <tr>
+                   <td>2</td>
+                   <td>Renault Stepway</td>
+                   <td>2015</td>
+                   <td>Синий</td>
+               </tr> -->
            
         </table>
     </div>
@@ -98,7 +98,95 @@
 
 
 <script>
-// script for task
+
+
+const gif = document.getElementsByClassName(`loader`)[0];
+const tbody = document.getElementsByTagName(`tbody`)[0];
+let pageItems = document.getElementsByClassName(`page-item`);
+
+
+
+changePage(2);
+makeXhr();
+ 
+// ехала работа с localstorage
+if (!localStorage.getItem("sort")) localStorage.setItem("sort", "id");;
+if (!localStorage.getItem("page")) localStorage.setItem("page", "1");
+if (!localStorage.getItem("dir")) localStorage.setItem("dir", "asc");
+
+
+// ехала работа с ИксХаЄр
+function makeXhr(){
+var xhr = new XMLHttpRequest();
+
+let params = '?page=' + encodeURIComponent(localStorage.getItem("page")) +
+             '&sort=' + encodeURIComponent(localStorage.getItem("sort")) +
+             '&dir=' + encodeURIComponent(localStorage.getItem("dir"));
+
+xhr.open("GET", 'ajax.php' + params, true);  
+
+xhr.send();
+
+xhr.onreadystatechange = function() {
+
+    if (xhr.readyState == 0) gif.removeAttribute(`hidden`);
+    if (xhr.readyState == 4) gif.setAttribute(`hidden`, true);
+    if (xhr.readyState != 4) return;
+     
+    if (xhr.status != 200) {         
+      alert(xhr.status + ': ' + xhr.statusText);     // обработать ошибку
+    } else {
+          try {
+            var cars = JSON.parse(xhr.responseText);
+          } catch (e) {
+                alert( "Что-то пошло не так: " + e.message );
+            }
+              showCars(cars);
+    }    
+
+ }
+ }
+
+
+function showCars(cars) {
+let tbodyHTML = ``;
+
+cars.forEach(function(cars) {
+tbodyHTML += `<tr>
+                <td>${cars.id}</td>
+                <td>${cars.name}</td>
+                <td>${cars.year}</td>
+                <td>${cars.color}</td>
+              </tr>`;
+ });
+
+tbody.innerHTML = tbodyHTML;
+}
+
+//history поехали
+
+function changeURL(){
+history.replaceState({page: `localStorage.getItem("page")`}, `Page${localStorage.getItem("page")}`,
+ `page${localStorage.getItem("page")}`);
+}
+
+function changePage(newPage){
+if (localStorage.getItem(`page`) == newPage) return;
+localStorage.setItem(`page`, `${newPage}`);
+makeXhr();
+changeURL();
+}
+
+for (let i = 0; i < pageItems.length; i++ ){
+
+  pageItems[i].onclick = function(e){
+  event.preventDefault();
+  changePage(i+1);
+  }
+
+}
+
+
 </script>
 </div>
 <br><br><br>
