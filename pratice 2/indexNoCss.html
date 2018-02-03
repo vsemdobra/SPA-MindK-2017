@@ -37,7 +37,6 @@
             border-radius: 100px;
             position: absolute;
             top: 120px;
-            transition: transform 0s linear;
         }
 
 
@@ -78,45 +77,10 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
             z-index: 10;
         }
-
-        /* My custom CSS */
-
-        .wrapper{
-        	position: fixed;
-        	top: 10px;
-        	right: 10px;
-        	z-index: 9999;
-        }
- 		.alert {
-            position: relative;
-            width: 450px;
-            right: 20px;
-            opacity: 0;
-            word-wrap: break-word;
-        }
-        .to-top{
-        	display: none;
-        	position: fixed;
-        	bottom: 50px;
-        	left: 50px;
-        	min-width: 400px;
-        	min-height: 80px;
-        	font-size: 3em;
-        	font-weight: bold;
-        	z-index: 5;
-        	border-radius:25px;
-        	background-color: #A6D0E4;
-        	box-shadow: 0px 0px 172px -16px #604c8d;
-        	border: none;
-        	text-align: left;
-        	scroll-behavior: smooth;                       /* поддержка у свойства без полифиллов не ахти, но на firefox плавно. */
-        }
-
-              </style>
+    </style>
     
 </head>
 <body>
-	<div class="wrapper"></div>
 <ol class="tasks">
     <li>
 
@@ -192,8 +156,90 @@ function addInsertListener (button, select, container) {
 <script>
 /* ==============   task 2 start*/
 
+
 const ball = document.getElementsByClassName(`play`)[0];
 const ballButton = ball.previousElementSibling;
+ball.style.willChange = 'transform';
+
+//Первый вариант -- это изначальный вариант с фиксированными дистанцией движения и времени
+/*
+let moved = false;
+const moveValue = 320;
+const moveTime = 2;
+
+
+ball.style.transition = `transform ${moveTime}s linear`;
+
+ballButton.addEventListener(`click`, function (event) {
+  event.preventDefault();
+
+  if (!moved) ball.style.transform = `translateX(${moveValue}px)`;
+  else ball.style.transform = `translateX(0px)`;
+
+ moved = !moved;
+  
+});*/
+
+//Можно было оставить и так, подставив огромные значения времени и дистанции перемещения и было бы псевдо-бесконечное движение: const moveValue = 3200; const moveTime = 20; но я попробовал сделать прям бесконечное движение
+//п.с. чтобы работало, самый нижний вариант надо бы закоментить и этот — раскоментить
+
+/*
+
+const intervalRange = 30;
+const intervalTiming = 0.2;
+let currentRange = 0;
+let moveRight = false;  
+
+ballButton.addEventListener(`click`, function (event) {
+  event.preventDefault();
+  ball.style.transition = `transform ${intervalTiming}s linear`; 
+
+  let timerId = setInterval(function() {
+
+    ball.style.transform = `translateX(${currentRange}px)`;
+  
+    if (moveRight) currentRange += intervalRange;
+      else currentRange -= intervalRange;
+  
+    }, intervalTiming*1000);
+
+  moveRight = !moveRight; 
+  
+});*/
+
+// если кликать 100500раз, то шар разгоняется. Думал проблема в задержке между выполнением функции через setInterval, потому попробовал через рекурсивный setTimeout 
+
+ /*
+const intervalRange = 30;
+const intervalTiming = 0.2;
+let currentRange = 0;
+let moveRight = false; 
+
+ballButton.addEventListener(`click`, function (event) {
+
+  event.preventDefault();     
+  ball.style.transition = `transform ${intervalTiming}s linear`; //наверное, лучше было выделить transition-duration, но надеюсь тут это не "аукнется"
+  
+  moveRight = !moveRight;
+
+  let timerId = setTimeout(function move() {
+     
+    if (moveRight) currentRange += intervalRange;
+      else currentRange -= intervalRange;
+
+    ball.style.transform = `translateX(${currentRange}px)`;
+
+    timerId = setTimeout(move, intervalTiming*1000);
+
+   }, intervalTiming*1000);
+     
+});
+*/
+
+/*Но меня все равно "спіткала невдача", и будет "ускорение". Не уверен, баг это или фича, но вроде как условие задания выполняет. 
+Прововал уже по разному исправить(через toggle классов на разные направления движения, пытался поймать на transitionend, зачем-то вмешивал сюда web animation API), но все равно получал баги ещё хуже. На хроме все было c "ускорением" шара, но адекватно, а вот на новом-производительном-молодежном firefox не всё так радужно, — там после разгона шар начинает иногда "блинковать" и мигать. В ff nightly(59+) этого мигания уже нету, значит ли это что-то??
+
+Остался последний для меня известный вариант через requestAnimationFrame.*/
 
 const intervalRange = 10;
 let currentRange = 0;
@@ -202,7 +248,8 @@ let gloablID; //переменная для контроля requestAnimationFra
 
 ballButton.addEventListener(`click`, function (event) {
 
-  event.preventDefault();      
+  event.preventDefault();     
+  ball.style.transition = `transform 0s linear`;  //при стабильном 60 фпс вроде как можно брать 0.017s, но лучше оставить 0. 
   moveRight = !moveRight;
 
   function moveBall(){
@@ -219,6 +266,18 @@ ballButton.addEventListener(`click`, function (event) {
        
 });
 
+/* Теперь всё, вроде бы, окей, но скорость перемещения теперь будет зависить от fps, а именно moveSpeed = intervalRange * fps (px/sec).
+requestAnimationFrame это оптимизация, экономия, но элемент зависим от фпс: 
+  при переключение вкладки элемент будет стоять на месте;
+  при лагах будет ехать медленно (ну тут есть костыль, в webGL используют специальную переменную deltaTime);
+  да ещё и разговоры про принятие 120 fps тоже вносят непоняток, и мониторы есть с другой частотой;
+  нужно не завтыкать, всё запихивать под один requestAnimationFrame (а то если их несколько -- случиться беда с производительностью) 
+
+  Как итог,— я где-то туплю с setTimeout, потому пришлось все делать на requestAnimationFrame(который очень крут, но в данном случае я его не хотел юзать, хотя setTimeout в анимации — это bad practice).
+  Ещё тут я юзал will-change, потому хорошим тоном было бы уменьшить размеры элемента play в n-раз и заскейлить его через transform:scale в n-раз и добавить соответствующие margin-bot/top чтобы не "выпадал" из потока. Визуально ничего не изменится в подобном случае, а вот видуху немного разгружает. 
+
+*/
+
 // ==============   task 2 end
 </script>
 
@@ -230,6 +289,8 @@ Alert должен плавно появляться в верхнем прав�
 Если несколько раз подряд нажать на кнопку - то сообщения выстраиваются один под другим.
 </h4>
 <br />
+
+<!--Как-то бы это все посадить на классы, но попробовал почти не менять ничего в html и css нативно  -->
 <input type="text" class="form-control">
 
 <button class="button btn btn-success">Success</button>
@@ -241,6 +302,15 @@ Alert должен плавно появляться в верхнем прав�
 <script>
 
 /* ==============   task 3 start*/
+
+//небольшой враппер для сообщений, для простоты позиционирования
+let wrapper = document.createElement(`div`);
+wrapper.className = `wrapper`;
+wrapper.style.position = `fixed`;
+wrapper.style.top = `10px`;
+wrapper.style.right = `10px`;
+wrapper.style.zIndex = `9999`;
+document.body.insertBefore(wrapper, document.body.firstChild);
 
 let inputElem = document.getElementsByTagName(`input`)[0]; 
 let successButton = inputElem.nextElementSibling;  
@@ -254,12 +324,15 @@ const transDuration = 0.6;   // дительность появления в с�
 function createAlert(alertText = `Yoyoyoyoyo! ZZZUP, maaan!`, alertType = `success`, alertTextStrong = 'Alert!'){
 
   let alertElement = document.createElement(`div`);
+  alertElement.style.position = `relative`;
   alertElement.className +=`alert alert-${alertType}`;
+  alertElement.style.opacity = 0;
+  alertElement.style.wordWrap = `break-word`;
   alertElement.innerHTML = `<strong>${alertTextStrong}</strong>! 
                             ${alertText}
                             <a href="#" class="close" title="close">&times;</a>`;
 
-  document.getElementsByClassName('wrapper')[0].appendChild(alertElement);
+  wrapper.appendChild(alertElement);
 
   setTimeout(function() {
     alertElement.style.transition = `all ${transDuration}s ease`;
@@ -303,12 +376,31 @@ dangerButton.addEventListener(`click`, function (event) {
 Кнопочку нужно аккуратно стилизовать.
 </h4>
 <br />
-<button class="to-top"></button>
+
 <script>
 
 /* ==============   task 4 start*/
 
-let toTop = document.getElementsByClassName(`to-top`)[0];
+let UpUpUp = document.createElement(`button`);
+document.body.appendChild(UpUpUp);
+UpUpUp.style.display = `none`;
+
+//теперь поехала "аккуратная стилизация"
+UpUpUp.style.position = `fixed`;
+UpUpUp.style.bottom = `50px`;
+UpUpUp.style.left = `50px`;
+UpUpUp.style.minWidth = `400px`;
+UpUpUp.style.minHeight =  `80px`;
+UpUpUp.style.fontSize = `3em`;
+UpUpUp.style.fontWeight = `bold`;
+UpUpUp.style.zIndex = `5`;
+UpUpUp.style.borderRadius = `25px`;
+UpUpUp.style.backgroundColor = `#A6D0E4`;
+UpUpUp.style.boxShadow = `0px 0px 172px -16px #604c8d`;
+UpUpUp.style.border = `none`;
+UpUpUp.style.textAlign = `left`;
+
+document.body.style.scrollBehavior = `smooth`;                        // поддержка у свойства без полифиллов не ахти, но на firefox плавно.
 
 //кусок сниппета снизу был взят для баловства тут:  https://www.codementor.io/mauriziocarboni/how-i-made-a-talking-emoji-using-regular-emojis-and-javascript-etmz7svtg
 
@@ -326,7 +418,7 @@ const delay = 150;
 setInterval(_=>{
   const character = message
     .toLowerCase()[Math.floor(new Date / delay)%(message.length+1)]
-  toTop.innerHTML =  
+  UpUpUp.innerHTML =  
   (Object.keys(emojiMap)
     .find(emoji => emojiMap[emoji].includes(character))
       || defaultEmoji)
@@ -340,12 +432,12 @@ window.onscroll = function() {
   let pageY = window.pageYOffset || document.documentElement.scrollTop;
   let clientHeight = document.documentElement.clientHeight;
   
-  if (pageY < clientHeight) toTop.style.display = `none`;
-    else toTop.style.display = `inline-block`;
+  if (pageY < clientHeight) UpUpUp.style.display = `none`;
+    else UpUpUp.style.display = `inline-block`;
 
 }
 
-toTop.onclick = function(){
+UpUpUp.onclick = function(){
 	window.scrollTo(0, 0);
 }
 

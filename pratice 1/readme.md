@@ -1,6 +1,6 @@
 `Ярослав Тыченко` первая пракитика по JS
 =========================
-### Код проверять по ссылке [http://dkab.github.io/jasmine-tests/](тут)
+### Код проверять по ссылке [тут](http://dkab.github.io/jasmine-tests/)
 ### вставлять код в соответствующем табе с № задания
 
 
@@ -130,7 +130,7 @@ function bind(func, context) {
 }
 
 ```
-Пример скрысил тут [https://learn.javascript.ru/bind](learn.javascript) в разделе про биндинг 
+Пример скрысил тут [learn.javascript](https://learn.javascript.ru/bind) в разделе про биндинг 
 Сам бы делал так:
 
 ```

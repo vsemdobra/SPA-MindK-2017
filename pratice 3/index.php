@@ -53,12 +53,12 @@
                         </div>
                     </th>
                     <th data-field="name">
-                        <div class="th-inner sortable both desc">
+                        <div class="th-inner sortable both">
                             Марка
                         </div>
                     </th>
                     <th data-field="year">
-                        <div class="th-inner sortable both asc">
+                        <div class="th-inner sortable both">
                             Год выпуска
                         </div>
                     </th>
@@ -88,7 +88,7 @@
 </div>
 <div class="pull-right pagination">
     <ul class="pagination">
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">1</a></li>
         <li class="page-item"><a class="page-link" href="#">2</a></li>
         <li class="page-item"><a class="page-link" href="#">3</a></li>
         <li class="page-item"><a class="page-link" href="#">4</a></li>
@@ -96,58 +96,38 @@
     </ul>
 </div>
 
-
 <script>
-
 
 const gif = document.getElementsByClassName(`loader`)[0];
 const tbody = document.getElementsByTagName(`tbody`)[0];
 let pageItems = document.getElementsByClassName(`page-item`);
+let sortItems = document.getElementsByTagName(`th`);
 
+//обзервер на изменение данных в localstorage, для "синхронности" вкладок
+window.addEventListener('storage', function(e) {
 
-
-changePage(2);
-makeXhr();
+   changeSort( localStorage.getItem("sort"), localStorage.getItem("dir") );
+   changePage( localStorage.getItem("page") ); 
+   showGIF(gif);  
+   makeXhr();   
+   changeURL();
+   changePagination();  
+   changeSortArrow();
+});
  
-// ехала работа с localstorage
-if (!localStorage.getItem("sort")) localStorage.setItem("sort", "id");;
+// проверка при пустом localstorage
+if (!localStorage.getItem("sort")) localStorage.setItem("sort", "id");
 if (!localStorage.getItem("page")) localStorage.setItem("page", "1");
 if (!localStorage.getItem("dir")) localStorage.setItem("dir", "asc");
 
+// стартовый переход на страницу, ещё без действий
+history.replaceState({page: localStorage.getItem("page")}, null, `page${localStorage.getItem("page")}`);
+showGIF(gif);
+makeXhr();
+document.getElementsByClassName('page-item')[localStorage.getItem("page") - 1].classList.add('active');
+changeSortArrow();
 
-// ехала работа с ИксХаЄр
-function makeXhr(){
-var xhr = new XMLHttpRequest();
-
-let params = '?page=' + encodeURIComponent(localStorage.getItem("page")) +
-             '&sort=' + encodeURIComponent(localStorage.getItem("sort")) +
-             '&dir=' + encodeURIComponent(localStorage.getItem("dir"));
-
-xhr.open("GET", 'ajax.php' + params, true);  
-
-xhr.send();
-
-xhr.onreadystatechange = function() {
-
-    if (xhr.readyState == 0) gif.removeAttribute(`hidden`);
-    if (xhr.readyState == 4) gif.setAttribute(`hidden`, true);
-    if (xhr.readyState != 4) return;
-     
-    if (xhr.status != 200) {         
-      alert(xhr.status + ': ' + xhr.statusText);     // обработать ошибку
-    } else {
-          try {
-            var cars = JSON.parse(xhr.responseText);
-          } catch (e) {
-                alert( "Что-то пошло не так: " + e.message );
-            }
-              showCars(cars);
-    }    
-
- }
- }
-
-
+//показать машинки и закинуть значения в таблицу. Вставлять кусьмяру html сразу,— вроде как самый производительный способ
 function showCars(cars) {
 let tbodyHTML = ``;
 
@@ -163,35 +143,133 @@ tbodyHTML += `<tr>
 tbody.innerHTML = tbodyHTML;
 }
 
-//history поехали
-
 function changeURL(){
-history.replaceState({page: `localStorage.getItem("page")`}, `Page${localStorage.getItem("page")}`,
- `page${localStorage.getItem("page")}`);
+history.pushState({page: localStorage.getItem("page")} , null, `page${localStorage.getItem("page")}`);
 }
 
+// изменяет значения страницы в localstorage
 function changePage(newPage){
-if (localStorage.getItem(`page`) == newPage) return;
-localStorage.setItem(`page`, `${newPage}`);
-makeXhr();
-changeURL();
+
+  if (localStorage.getItem(`page`) == newPage) return;
+  
+  localStorage.setItem(`page`, `${newPage}`);
+  makeXhr();
+  changeURL();
 }
 
+// вешаем обработчики на клик для каждой страницы пагинации
 for (let i = 0; i < pageItems.length; i++ ){
 
-  pageItems[i].onclick = function(e){
-  event.preventDefault();
-  changePage(i+1);
+  pageItems[i].onclick = function(e){  
+    event.preventDefault();
+    changePage(i+1);
+    changePagination();        
   }
-
 }
 
+// вешаем обработчики на клик для каждого столбца сортировки
+for (let i = 0; i < sortItems.length; i++ ){
 
+  sortItems[i].onclick = function(e){  
+    event.preventDefault();     
+
+    if (localStorage.getItem(`dir`) == `asc` ) {
+      changeSort(sortItems[i].dataset.field, `desc`)
+    } else {
+      changeSort(sortItems[i].dataset.field, `asc`)
+    } 
+
+    changeSortArrow();
+  }
+}
+
+// изменяет значения сортировки и порядка в localstorage
+function changeSort(newSort, newDir){
+
+  if (localStorage.getItem(`sort`) == newSort)
+    if (localStorage.getItem(`dir`) == newDir) return;
+   
+  if (localStorage.getItem(`sort`) == newSort){
+
+    if (newDir == 'asc'){
+      localStorage.setItem(`dir`, `asc`);
+      makeXhr();
+      return;
+    } 
+
+    if (newDir == 'desc') {
+      localStorage.setItem(`dir`, `desc`);     
+      makeXhr();
+      return;
+    }
+  }
+  localStorage.setItem(`sort`, `${newSort}`);
+  localStorage.setItem(`dir`, `${newDir}`);
+  makeXhr();  
+}
+
+//меняет номер страницы в пагинации
+function changePagination() {
+for (let j = 0; j < pageItems.length; j++ )
+      pageItems[j].classList.remove(`active`)
+
+    pageItems[localStorage.getItem("page") - 1].classList.add(`active`);
+}
+
+//меняет стрелку сортировки в таблице
+function changeSortArrow(){
+   for (let j = 0; j < sortItems.length; j++ ){ 
+
+     if ( sortItems[j].getElementsByClassName(`sortable`)[0].classList.contains(`asc`) ) 
+      sortItems[j].getElementsByClassName(`sortable`)[0].classList.remove(`asc`);
+
+     if ( sortItems[j].getElementsByClassName(`sortable`)[0].classList.contains(`desc`) ) 
+      sortItems[j].getElementsByClassName(`sortable`)[0].classList.remove(`desc`);
+       
+     if ( sortItems[j].dataset.field == localStorage.getItem(`sort`) )
+      sortItems[j].getElementsByClassName(`sortable`)[0].classList.add(`${localStorage.getItem(`dir`)}`)
+   }
+}
+
+function showGIF(gif){
+  gif.removeAttribute(`hidden`);
+}
+
+// настравиаем ИксХаЄр 
+function makeXhr(){
+var xhr = new XMLHttpRequest();
+
+//выделил парамтеры в переменную только для читабельности
+let params = '?page=' + encodeURIComponent(localStorage.getItem("page")) +
+             '&sort=' + encodeURIComponent(localStorage.getItem("sort")) +
+             '&dir=' + encodeURIComponent(localStorage.getItem("dir"));
+
+xhr.open("GET", 'ajax.php' + params, true);  
+
+xhr.send();
+
+  xhr.onreadystatechange = function() {
+
+    if (xhr.readyState == 4) gif.setAttribute(`hidden`, true);
+
+    if (xhr.readyState != 4) return;
+
+    if (xhr.status != 200) {         
+      let cars;
+      alert(xhr.status + ': ' + xhr.statusText);     // обработать ошибку
+    } else {
+          try {
+            cars = JSON.parse(xhr.responseText);
+          } catch (e) {
+                alert( "Что-то пошло не так: " + e.message );
+            }
+              showCars(cars);
+    }    
+  }
+}
 </script>
 </div>
 <br><br><br>
-
-
 
 </body>
 </html>
