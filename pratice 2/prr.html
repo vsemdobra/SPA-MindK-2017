@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Task 1</title>
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    
+    <style>
+    body{
+      height: 1000px;
+      background: #f1f212;
+    }
+        .to-top {
+  position: fixed;
+  display:block;
+  min-width: 300px;
+          bottom: 50px;
+          left: 50px;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  background: #f72359;
+  padding: 1em 2em;
+  border: none;
+  color: white;
+  font-size: 1.2em;
+  cursor: pointer;
+  outline: none;
+  overflow: hidden;
+  border-radius: 100px;
+}
+
+.to-top{
+          
+          position: fixed;
+          bottom: 50px;
+          left: 50px;
+          min-width: 420px;
+          min-height: 80px;          
+          font-weight: bold;
+          z-index: 5;
+          border-radius:25px;        
+          box-shadow: 0px 0px 172px -16px #604c8d;
+          border: none;
+          text-align: left;
+          scroll-behavior: smooth;                       /* поддержка у свойства без полифиллов не ахти, но на firefox плавно. */
+        }
+
+
+.to-top span {
+  position: relative;
+  pointer-events: none;
+}
+.to-top::before {
+  --size: 0;
+  content: '';
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  background: radial-gradient(circle closest-side, #4405f7, transparent);
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  -webkit-transition: width .2s ease, height .2s ease;
+  transition: width .2s ease, height .2s ease;
+}
+.to-top:hover::before {
+  --size: 400px;
+}
+
+
+              </style>
+    
+</head>
+<body>
+
+
+  <button class="to-top">
+  <span>Hover me I'm awesome</span>
+</button>
+
+<script>
+
+const toTop = document.getElementsByClassName(`to-top`)[0];
+
+//кусок сниппета снизу был взят для баловства тут:  https://www.codementor.io/mauriziocarboni/how-i-made-a-talking-emoji-using-regular-emojis-and-javascript-etmz7svtg
+
+const emojiMap = {                  // "азбука" emodji
+  "😮": ["и", "а", "х"],
+  "😐": ["г", "в"],
+  "🙂": ["в", "н"], 
+  "😬": ["е"],
+  "😐": ["о" ,"п"],
+  "😀": ["р", "a"]
+ }
+const defaultEmoji = "😐";
+const message = "Погнали вверх❗️";   
+const delay = 150;
+setInterval(_=>{
+  const character = message
+    .toLowerCase()[Math.floor(new Date / delay)%(message.length+1)]
+  toTop.getElementsByTagName('span')[0].innerHTML =  
+  (Object.keys(emojiMap)
+    .find(emoji => emojiMap[emoji].includes(character))
+      || defaultEmoji)
+  
+  + message.substr(0,
+    Math.floor(new Date / delay)%(message.length+1)) 
+},delay)
+//конец стилизации 
+
+window.onscroll = function() {
+  let pageY = window.pageYOffset || document.documentElement.scrollTop;
+  let clientHeight = document.documentElement.clientHeight;
+  
+  if (pageY < clientHeight) toTop.style.display = `none`;
+  else toTop.style.display = `block`;
+
+}
+
+toTop.onclick = function(){
+  window.scrollTo(0, 0);
+}
+
+toTop.onmousemove = (event) => {
+  const x = event.pageX - event.target.offsetLeft;
+  const y = event.target.pageY - event.target.offsetTop
+  event.target.style.setProperty('--x', `${ x }px`);
+  event.target.style.setProperty('--y', `${ y }px`);
+ 
+}
+
+
+
+</script>
+
+</body>
+</html>
+
+
+
+

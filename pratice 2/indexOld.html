@@ -87,7 +87,7 @@
         	right: 10px;
         	z-index: 9999;
         }
- 		    .alert {
+ 		.alert {
             position: relative;
             width: 450px;
             right: 20px;
@@ -99,46 +99,18 @@
         	position: fixed;
         	bottom: 50px;
         	left: 50px;
-        	min-width: 420px;
+        	min-width: 400px;
         	min-height: 80px;
         	font-size: 3em;
-          appearance: none;
         	font-weight: bold;
         	z-index: 5;
-        	border-radius:25px;        
+        	border-radius:25px;
+        	background-color: #A6D0E4;
         	box-shadow: 0px 0px 172px -16px #604c8d;
-          background: #f72359;
         	border: none;
         	text-align: left;
-          color: white;
-          border-radius: 60px;
-          cursor: pointer;
-          outline: none;
-          overflow: hidden;
-          scroll-behavior: smooth;      
-                           /* поддержка у свойства без полифиллов не ахти, но на firefox плавно. */
+        	scroll-behavior: smooth;                       /* поддержка у свойства без полифиллов не ахти, но на firefox плавно. */
         }
-        .to-top span {
-          position: relative;
-          pointer-events: none;
-        }
-        .to-top::before {
-         --size: 0;
-         content: '';
-         position: absolute;
-         left: var(--x);
-         top: var(--y);
-         width: var(--size);
-         height: var(--size);
-         background: radial-gradient(circle closest-side, #4405f7, transparent);         
-         transform: translate(-50%, -50%);         
-         transition: width .2s ease, height .2s ease;
-        }
-        .to-top:hover::before {
-         --size: 400px;
-        }
-
-
 
               </style>
     
@@ -160,51 +132,50 @@
 </pre>
 <br />
 
-<select class="form-control" id="select-form">
+<select class="form-control">
     <option>Добавить в начало</option>
     <option>Добавить в середину</option>
     <option>Добавить в конец</option>
 </select>
-<button class="button btn btn-success" id="select-btn">Нажать</button>
+<button class="button btn btn-success">Нажать</button>
 <div id="container"></div>
 
 <script>
 /* ==============   task 1 start*/
 
 //форма, контейнер и кнопка соответственно
-const selectForm = document.getElementById(`select-form`);
+const selectForm = document.getElementsByClassName(`form-control`)[0];
 const containerForIns = document.getElementById(`container`);
-const submitButton = document.getElementById(`select-btn`);
+const submitButton = containerForIns.previousElementSibling;
 
 addInsertListener(submitButton, selectForm, containerForIns);
 
-function addInsertListener(button, select, container) {
-  let insNumber = 1;
-  button.addEventListener(`click`, function(event) {
+function addInsertListener (button, select, container) {
+  let insNumber = 0;
+  button.addEventListener(`click`, function (event) {
+
     let html = `<div class="item">
     <h4>Заголовок # ${insNumber}</h4>
     <p>текст текст текст</p>
     </div>`;
+ 
+    let midDiv = container.childNodes[ Math.round(container.childNodes.length / 2) - 1 ];  // определяем серединный контейнер
 
-    let midDiv =
-      container.childNodes[Math.round(container.childNodes.length / 2) - 1]; // определяем серединный контейнер
+    //может, тут было уместнее использовать switch:case
+    if  (select.children[0].selected) container.insertAdjacentHTML(`afterBegin`, html);
 
-    //возможно, тут было уместнее использовать switch() case:
-    if (select.children[0].selected)
-      container.insertAdjacentHTML(`afterBegin`, html);
-
-    if (select.children[1].selected)
+    if  (select.children[1].selected) 
       if (midDiv) midDiv.insertAdjacentHTML(`beforeBegin`, html);
-      else container.insertAdjacentHTML(`afterBegin`, html);
+       else container.insertAdjacentHTML(`afterBegin`, html);        
 
-    if (select.children[2].selected)
-      container.insertAdjacentHTML(`beforeEnd`, html);
+    if  (select.children[2].selected) container.insertAdjacentHTML(`beforeEnd`, html);
 
     insNumber++;
     return false;
-  });
-}
 
+  });
+
+}
 /* ==============   task 1 end*/
 </script>
 
@@ -224,28 +195,29 @@ function addInsertListener(button, select, container) {
 const ball = document.getElementsByClassName(`play`)[0];
 const ballButton = ball.previousElementSibling;
 
-const intervalRange = 10; //скорость перемещения на каждый кадр
+const intervalRange = 10;
 let currentRange = 0;
-let moveRight = false;
+let moveRight = false;  
 let gloablID; //переменная для контроля requestAnimationFrame
 
-ballButton.addEventListener(`click`, function(event) {
-  event.preventDefault();
+ballButton.addEventListener(`click`, function (event) {
+
+  event.preventDefault();      
   moveRight = !moveRight;
 
-  function moveBall() {
+  function moveBall(){
     cancelAnimationFrame(globalID);
 
     if (moveRight) currentRange += intervalRange;
-    else currentRange -= intervalRange;
+      else currentRange -= intervalRange;
 
     ball.style.transform = `translateX(${currentRange}px)`;
     globalID = requestAnimationFrame(moveBall);
   }
 
   globalID = requestAnimationFrame(moveBall);
+       
 });
-
 
 // ==============   task 2 end
 </script>
@@ -260,7 +232,7 @@ Alert должен плавно появляться в верхнем прав�
 <br />
 <input type="text" class="form-control">
 
-<button class="button btn btn-success" id="success">Success</button>
+<button class="button btn btn-success">Success</button>
 <button class="button btn btn-info">Info</button>
 <button class="button btn btn-warning">Warning</button>
 <button class="button btn btn-danger">Danger</button>
@@ -270,13 +242,13 @@ Alert должен плавно появляться в верхнем прав�
 
 /* ==============   task 3 start*/
 
-const inputElem = document.getElementsByTagName(`input`)[0]; 
-const successButton = document.getElementById(`success`); 
-const infoButton = document.getElementsByClassName(`btn-info`)[0];
-const warningButton = document.getElementsByClassName(`btn-warning`)[0];
-const dangerButton = document.getElementsByClassName(`btn-danger`)[0];
+let inputElem = document.getElementsByTagName(`input`)[0]; 
+let successButton = inputElem.nextElementSibling;  
+let infoButton = document.getElementsByClassName(`btn-info`)[0];
+let warningButton = document.getElementsByClassName(`btn-warning`)[0];
+let dangerButton = document.getElementsByClassName(`btn-danger`)[0];
 const removeTime = 10;       //таймер удаления в секундах
-const transDuration = 0.6;   // длительность появления в секундах
+const transDuration = 0.6;   // дительность появления в секундах
 
 
 function createAlert(alertText = `Yoyoyoyoyo! ZZZUP, maaan!`, alertType = `success`, alertTextStrong = 'Alert!'){
@@ -303,7 +275,6 @@ function createAlert(alertText = `Yoyoyoyoyo! ZZZUP, maaan!`, alertType = `succe
     event.preventDefault();
   });
 
-  inputElem.value = '';  //очищает инпут, но так не удобно тестировать 
  }
 
 successButton.addEventListener(`click`, function (event) {
@@ -332,12 +303,12 @@ dangerButton.addEventListener(`click`, function (event) {
 Кнопочку нужно аккуратно стилизовать.
 </h4>
 <br />
-<button class="to-top"><span></span></button>
+<button class="to-top"></button>
 <script>
 
 /* ==============   task 4 start*/
 
-const toTop = document.getElementsByClassName(`to-top`)[0];
+let toTop = document.getElementsByClassName(`to-top`)[0];
 
 //кусок сниппета снизу был взят для баловства тут:  https://www.codementor.io/mauriziocarboni/how-i-made-a-talking-emoji-using-regular-emojis-and-javascript-etmz7svtg
 
@@ -355,7 +326,7 @@ const delay = 150;
 setInterval(_=>{
   const character = message
     .toLowerCase()[Math.floor(new Date / delay)%(message.length+1)]
-  toTop.getElementsByTagName('span')[0].innerHTML =  
+  toTop.innerHTML =  
   (Object.keys(emojiMap)
     .find(emoji => emojiMap[emoji].includes(character))
       || defaultEmoji)
@@ -365,29 +336,18 @@ setInterval(_=>{
 },delay)
 //конец стилизации 
 
-toTop.onclick = function(){
-  window.scrollTo(0, 0);
-}
-
-toTop.onmousemove = (event) => {
-  const x = event.pageX - event.target.offsetLeft;
-  const y = event.target.pageY - event.target.offsetTop;
-  event.target.style.setProperty('--x', `${ x }px`)
-  event.target.style.setProperty('--y', `${ y }px`)
- 
-}
-
-
 window.onscroll = function() {
   let pageY = window.pageYOffset || document.documentElement.scrollTop;
   let clientHeight = document.documentElement.clientHeight;
   
   if (pageY < clientHeight) toTop.style.display = `none`;
-  else toTop.style.display = `block`;
+    else toTop.style.display = `inline-block`;
 
 }
 
-
+toTop.onclick = function(){
+	window.scrollTo(0, 0);
+}
 
 /* ==============   task 4 end*/  
 </script>
@@ -416,7 +376,6 @@ let shiftY, shiftX, coords, limits;
 
 for (let i = 0; i < movedElement.length; i++ ){  // обращаемся ко всем елементам, которые собираемся двигать
   movedElement[i].style.willChange = 'transform';
-
   let elementWidth = parseInt(getComputedStyle(movedElement[i]).width);
   let elementHeight = parseInt(getComputedStyle(movedElement[i]).height);
 
@@ -472,8 +431,8 @@ function getCoords(elem) {
     shiftX = e.pageX - coords.left;
     shiftY = e.pageY - coords.top;     // значение смещения привязки элемента к курсору при клике
 
-    field.onmousemove = function(event){
-      movingIt(event);
+    field.onmousemove = function(e){
+      movingIt(e);
     }
   
     document.onmouseup = function() {
@@ -486,21 +445,21 @@ function getCoords(elem) {
   }
 
   //теперь то же самое для touch событий
-  movedElement[i].ontouchstart = function(event) {
+  movedElement[i].ontouchstart = function(e) {
     event.preventDefault();
    
 
-    function movingItTouch(event) {
+    function movingItTouch(e) {
  //функция, которая двигает елемент и определяет границы для тачей
 
  //двигаем элемент и определяем его границы по оси Х
-      let translateX = event.touches[0].pageX - shiftX - limits.left - parseInt(movedElement[i].style.left); 
+      let translateX = e.touches[0].pageX - shiftX - limits.left - parseInt(movedElement[i].style.left); 
       let criticalLeft = paddingToBorder;
       let currentX =  parseInt(movedElement[i].style.left) + translateX;
       let criticalRight = limits.right - paddingToBorder - elementWidth - limits.left;
 
 //двигаем элемент и определяем его границы по оси У
-      let translateY = event.touches[0].pageY - shiftY - limits.top - parseInt(movedElement[i].style.top);
+      let translateY = e.touches[0].pageY - shiftY - limits.top - parseInt(movedElement[i].style.top);
       let criticalTop = paddingToBorder;
       let currentY =  parseInt(movedElement[i].style.top) + translateY;
       let criticalBottom = limits.bottom - limits.top - paddingToBorder - elementHeight;
@@ -522,16 +481,16 @@ function getCoords(elem) {
 
     movedElement[i].className +=' move';
   
-    shiftX = event.touches[0].pageX - coords.left;
-    shiftY = event.touches[0].pageY - coords.top;     // смещение привязки элемента к курсору при клике
+    shiftX = e.touches[0].pageX - coords.left;
+    shiftY = e.touches[0].pageY - coords.top;     // смещение привязки элемента к курсору при клике
     console.log (shiftX + ' '+ shiftY);
 
-    field.ontouchmove = function(event){
-      movingItTouch(event);
+    field.ontouchmove = function(e){
+      movingItTouch(e);
       event.preventDefault();      
     }    
 
-    document.ontouchend = function(event) {
+    document.ontouchend = function() {
       event.preventDefault();
       field.ontouchmove = null;
       movedElement[i].ontouchend = null;
